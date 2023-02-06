@@ -2,6 +2,7 @@ import pandas as pd
 
 df = pd.read_csv("files/hotels.csv", dtype={"id": str})
 df_cards = pd.read_csv("files/cards.csv", dtype=str).to_dict(orient="records")
+df_card_security = pd.read_csv("files/card_security.csv", dtype=str)
 
 
 class Hotel:
@@ -12,10 +13,14 @@ class Hotel:
 
     def view_available(self):
         availibility = df.loc[df["id"] == self.hotel_id, "available"].squeeze()
-        if availibility == "yes":
-            return True
-        else:
-            return False
+        try:
+            if availibility == "yes":
+                return True
+            else:
+                print("\nNo rooms availalbe in that hotel.\n")
+                return False
+        except ValueError:
+            print("\nERROR! - That was not a valid hotel id number.\n")
 
     def reserve(self):
         df.loc[df["id"] == self.hotel_id, "available"] = "no"
@@ -50,21 +55,34 @@ class CreditCard:
                      "cvc": cvc_code}
         if card_data in df_cards:
             return True
+        else:
+            return False
 
 
-print(df)
-hotel_id = input("Enter the id number of the hotel: ")
+class SecureCreditCard(CreditCard):
+    def authenticate(self, given_password):
+        password = df_card_security.loc[df_card_security["number"] == self.number, "password"].squeeze()
+        if password == given_password:
+            return True
+        else:
+            return False
+
+
+print(f"\n{df}")
+hotel_id = input("\nEnter the id number of the hotel: ")
 hotel = Hotel(hotel_id)
 if hotel.view_available():
-    credit_card = CreditCard(number="1234567890123456",)
+    credit_card = SecureCreditCard(number="1234567890123456",)
     if credit_card.validate(card_holder="JOHN SMITH",
                             expiration="12/26",
                             cvc_code="123"):
-        hotel.reserve()
-        guest_name = input("Enter guest name: ")
-        confirmation_number = Confirmation(guest_name=guest_name, hotel=hotel)
-        print(confirmation_number.generate())
+        #user_passw = input("Enter password: ")
+        if credit_card.authenticate(given_password="mypass"):
+            hotel.reserve()
+            guest_name = input("Enter guest name: ")
+            confirmation_number = Confirmation(guest_name=guest_name, hotel=hotel)
+            print(confirmation_number.generate())
+        else:
+            print("\nCredit card authentication failed.\n")
     else:
-        print("There was a problem with your payment.")
-else:
-    print("No rooms availalbe in hotel.")
+        print("\nThere was a problem with your payment.\n")
