@@ -34,7 +34,20 @@ class Confirmation:
 
     def generate(self):
         content = f"""
-        Thank you for your reservation!
+        Thank you for your hotel reservation!
+        Here are your booking details:
+        Name: {self.guest_name.title()}
+        Hotel: {self.hotel.name}
+        City: {self.hotel.city}
+        Reservation Number: ABC000123456789
+        """
+        return content
+
+
+class SpaReservation(Confirmation):
+    def generate(self):
+        content = f"""
+        Thank you for your SPA reservation!
         Here are your booking details:
         Name: {self.guest_name.title()}
         Hotel: {self.hotel.name}
@@ -82,6 +95,13 @@ if hotel.view_available():
             guest_name = input("Enter guest name: ")
             confirmation_number = Confirmation(guest_name=guest_name, hotel=hotel)
             print(confirmation_number.generate())
+
+            spa_res = input("Would you like to add a SPA backage to your reservation? ")
+            if spa_res.lower() == "yes":
+                spa_confirmation_number = SpaReservation(guest_name=guest_name, hotel=hotel)
+                print(spa_confirmation_number.generate())
+            else:
+                print("\nThanks any way. Enjoy your stay!\n")
         else:
             print("\nCredit card authentication failed.\n")
     else:
